@@ -10,20 +10,20 @@ class Book {
 // UI Class: Handle UI Tasks
 class UI {
     static displayBooks() {
-        const StoredBooks = [
-            {
-                title: "Book One",
-                author: "John Doe",
-                isbn: 3434434
-            },
-            {
-                title: "Book Two",
-                author: "Jane Doe",
-                isbn: 45545
-            }
-        ]
+        // const StoredBooks = [
+        //     {
+        //         title: "Book One",
+        //         author: "John Doe",
+        //         isbn: 3434434
+        //     },
+        //     {
+        //         title: "Book Two",
+        //         author: "Jane Doe",
+        //         isbn: 45545
+        //     }
+        // ]
 
-        const books = StoredBooks;
+        const books = Store.getBooks();
 
         books.forEach(book => UI.addBookToList(book));
     }
@@ -69,6 +69,38 @@ class UI {
 }
 
 // Store Class: Handles Storage
+// note: cannot store objects in local storage, therefore need to be strings
+// intoStorage: JSON.stringify | fromStorage: JSON.parse
+class Store {
+    static getBooks() {
+        let books;
+        if (localStorage.getItem("books") === null) {
+            books = [];
+        } else {
+            books = JSON.parse(localStorage.getItem("books"));
+        }
+
+        return books;
+    }
+
+    static addBook(book) {
+        const books = Store.getBooks();
+        books.push(book);
+        localStorage.setItem("books", JSON.stringify(books));
+    }
+
+    static removeBook(isbn) {
+        const books = Store.getBooks();
+
+        books.forEach((book, index) => {
+            if (book.isbn === isbn) {
+                books.splice(index, 1);
+            }
+        })
+
+        localStorage.setItem("books", JSON.stringify(books));
+    }
+}
 
 // Event: Display Books
 document.addEventListener("DOMContentLoaded", UI.displayBooks())
@@ -91,7 +123,8 @@ function submitNewBook(e) {
     } else {
         const book = new Book(title, author, isbn);
 
-        UI.addBookToList(book);
+        UI.addBookToList(book);     // added to UI
+        Store.addBook(book);        // added to localStorage
 
         UI.showAlert("Successfully added new book", "success");
 
@@ -103,5 +136,7 @@ function submitNewBook(e) {
 const bookList = document.querySelector("#book-list");
 bookList.addEventListener("click", e => {
     UI.deleteBook(e.target);
+    Store.removeBook(e.target.parentElement.previousElementSibling.textContent);    // to target the isbn
+
     UI.showAlert("Book removed", "success");
 })
