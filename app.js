@@ -24,6 +24,7 @@ class UI {
         // ]
 
         const books = Store.getBooks();
+        console.log(books);
 
         books.forEach(book => UI.addBookToList(book));
     }
@@ -36,23 +37,53 @@ class UI {
             <td>${book.title}</td>
             <td>${book.author}</td>
             <td>${book.isbn}</td>
-            <td><a class="btn btn-danger btn-sm delete" href="#">X</a></td>
+            <td class="d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-warning update" data-bs-toggle="modal" data-bs-target="#updateModal">
+                    Edit
+                </button>          
+                <a class="btn btn-danger btn-sm delete" href="#">X</a>
+            </td>
         `;
 
         List.appendChild(row);
     }
 
+    static updateBook(el) {
+        const updateBookForm = document.querySelector("#book-update-form");
+        updateBookForm.addEventListener("submit", e => {
+            e.preventDefault();
+            console.log("submit");
+
+            const updatedTitle = document.querySelector("#title-update").value;
+            const updatedAuthor = document.querySelector("#author-update").value;
+            const updatedIsbn = document.querySelector("#isbn-update").value;
+
+            if (updatedTitle === "" || updatedAuthor === "" || updatedIsbn === "") {
+                UI.showAlert("Modal: Please fill in all the fields", "danger");
+            } else {
+                const updatedBook = new Book(updatedTitle, updatedAuthor, updatedIsbn);
+                // console.log(updatedBook);
+
+                // console.log(el.parentElement.parentElement);
+                let oldElement = el.parentElement.parentElement;
+                oldElement.replaceWith(UI.addBookToList(updatedBook));      // note: appendChild therefore always at the end
+
+                UI.showAlert("Modal: Book updated", "success");
+
+                e.stopPropagation();
+            }
+        })
+    }
+
     static deleteBook(el) {
-        if (el.classList.contains("delete")) {
-            el.parentElement.parentElement.remove();
-        }
+        el.parentElement.parentElement.remove();
     }
 
     static showAlert(message, className) {
         // Make div
         const div = document.createElement("div");
         div.className = `container alert alert-${className}`;
-        div.innerText = message;
+        div.innerText = message;                    // innerText||textContent vs createTextNode ==> overwrite vs additive
 
         // Add div to DOM
         const form = document.querySelector("#book-form");
@@ -68,7 +99,7 @@ class UI {
     }
 }
 
-// Store Class: Handles Storage
+// Store Class: Handles Storage - localStorage has key and value
 // note: cannot store objects in local storage, therefore need to be strings
 // intoStorage: JSON.stringify | fromStorage: JSON.parse
 class Store {
@@ -77,7 +108,7 @@ class Store {
         if (localStorage.getItem("books") === null) {
             books = [];
         } else {
-            books = JSON.parse(localStorage.getItem("books"));
+            books = JSON.parse(localStorage.getItem("books"));  // getItem in string form, then parse to object
         }
 
         return books;
@@ -135,8 +166,31 @@ function submitNewBook(e) {
 // Event: Remove a Book - since there is multiple delete btn, use event propogation ie. select parent of element to be deleted
 const bookList = document.querySelector("#book-list");
 bookList.addEventListener("click", e => {
-    UI.deleteBook(e.target);
-    Store.removeBook(e.target.parentElement.previousElementSibling.textContent);    // to target the isbn
+    console.log(e.target);
+    if (e.target.classList.contains("delete")) {
+        UI.deleteBook(e.target);
+        Store.removeBook(e.target.parentElement.previousElementSibling.textContent);    // to target the isbn
 
-    UI.showAlert("Book removed", "success");
+        UI.showAlert("Book removed", "success");
+    } else if (e.target.classList.contains("update")) {         // Event: Update / edit a Book
+        // console.log(e.target);
+        UI.updateBook(e.target);
+        // ----- or -----
+        // document.querySelector("#book-update-form").addEventListener("submit", ev => {
+        //     ev.preventDefault();
+        //     console.log("submit");
+
+        //     UI.deleteBook(e.target);
+
+        //     const updatedTitle = document.querySelector("#title-update").value;
+        //     const updatedAuthor = document.querySelector("#author-update").value;
+        //     const updatedIsbn = document.querySelector("#isbn-update").value;
+
+        //     const updatedBook = new Book(updatedTitle, updatedAuthor, updatedIsbn);
+        //     UI.addBookToList(updatedBook);
+        // })          // same with UI.updateBook except here uses UI.deleteBook|UI.addBookToList whereas top uses the replaceWith method
+    }
 })
+
+// -------- Speacial request Fahmin ---------------------
+
