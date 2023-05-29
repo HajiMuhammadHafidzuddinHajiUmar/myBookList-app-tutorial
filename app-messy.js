@@ -240,6 +240,7 @@ updateModal.addEventListener("show.bs.modal", e => {
         UI.addBookToList(book);
 
         console.log("submitted");
+        UI.showAlert(`${bookTitle} has been updated`, "success");
 
         updateForm.removeEventListener("submit", arguments.callee);
     })
