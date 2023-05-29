@@ -38,7 +38,8 @@ class UI {
             <td>${book.author}</td>
             <td>${book.isbn}</td>
             <td class="d-flex justify-content-center gap-3">
-                <button type="button" class="btn btn-warning update" data-bs-toggle="modal" data-bs-target="#updateModal">
+                <button type="button" class="btn btn-warning update" 
+                    data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${book.title}">
                     Edit
                 </button>          
                 <a class="btn btn-danger btn-sm delete" href="#">X</a>
@@ -48,32 +49,42 @@ class UI {
         List.appendChild(row);
     }
 
-    static updateBook(el) {
-        const updateBookForm = document.querySelector("#book-update-form");
-        updateBookForm.addEventListener("submit", e => {
-            e.preventDefault();
-            console.log("submit");
+    // static updateBook(el) {
+    //     const updateBookForm = document.querySelector("#book-update-form");
+    //     updateBookForm.addEventListener("submit", e => {
+    //         e.preventDefault();
+    //         console.log("submit");
 
-            const updatedTitle = document.querySelector("#title-update").value;
-            const updatedAuthor = document.querySelector("#author-update").value;
-            const updatedIsbn = document.querySelector("#isbn-update").value;
+    //         const updatedTitle = document.querySelector("#title-update").value;
+    //         const updatedAuthor = document.querySelector("#author-update").value;
+    //         const updatedIsbn = document.querySelector("#isbn-update").value;
 
-            if (updatedTitle === "" || updatedAuthor === "" || updatedIsbn === "") {
-                UI.showAlert("Modal: Please fill in all the fields", "danger");
-            } else {
-                const updatedBook = new Book(updatedTitle, updatedAuthor, updatedIsbn);
-                // console.log(updatedBook);
+    //         if (updatedTitle === "" || updatedAuthor === "" || updatedIsbn === "") {
+    //             UI.showAlert("Modal: Please fill in all the fields", "danger");
+    //         } else {
+    //             const row = document.createElement("tr");
+    //             row.innerHTML = `
+    //                 <td>${updatedTitle}</td>
+    //                 <td>${updatedAuthor}</td>
+    //                 <td>${updatedIsbn}</td>
+    //                 <td class="d-flex justify-content-center gap-3">
+    //                     <button type="button" class="btn btn-warning update" data-bs-toggle="modal" data-bs-target="#updateModal">
+    //                         Edit
+    //                     </button>          
+    //                     <a class="btn btn-danger btn-sm delete" href="#">X</a>
+    //                 </td>
+    //             `;
 
-                // console.log(el.parentElement.parentElement);
-                let oldElement = el.parentElement.parentElement;
-                oldElement.replaceWith(UI.addBookToList(updatedBook));      // note: appendChild therefore always at the end
+    //             // console.log(el.parentElement.parentElement);
+    //             let oldElement = el.parentElement.parentElement;
+    //             oldElement.replaceWith(row);
 
-                UI.showAlert("Modal: Book updated", "success");
+    //             UI.showAlert("Modal: Book updated", "success");
 
-                e.stopPropagation();
-            }
-        })
-    }
+    //             // e.stopPropagation();
+    //         }
+    //     })
+    // }
 
     static deleteBook(el) {
         el.parentElement.parentElement.remove();
@@ -166,15 +177,15 @@ function submitNewBook(e) {
 // Event: Remove a Book - since there is multiple delete btn, use event propogation ie. select parent of element to be deleted
 const bookList = document.querySelector("#book-list");
 bookList.addEventListener("click", e => {
-    console.log(e.target);
+    // console.log(e.target);
     if (e.target.classList.contains("delete")) {
         UI.deleteBook(e.target);
         Store.removeBook(e.target.parentElement.previousElementSibling.textContent);    // to target the isbn
 
         UI.showAlert("Book removed", "success");
-    } else if (e.target.classList.contains("update")) {         // Event: Update / edit a Book
+        // } else if (e.target.classList.contains("update")) {         // Event: Update / edit a Book
         // console.log(e.target);
-        UI.updateBook(e.target);
+        // UI.updateBook(e.target);
         // ----- or -----
         // document.querySelector("#book-update-form").addEventListener("submit", ev => {
         //     ev.preventDefault();
@@ -192,5 +203,61 @@ bookList.addEventListener("click", e => {
     }
 })
 
-// -------- Speacial request Fahmin ---------------------
+// -------- Speacial request Fahmin - Event: Update ---------------------
+// refer to bootstraps' varying modal content
+const updateModal = document.querySelector("#updateModal");
+updateModal.addEventListener("show.bs.modal", e => {
+    let editBtn = e.relatedTarget;
+    // console.log(editBtn);
 
+    let bookTitle = editBtn.getAttribute("data-bs-edit") && editBtn.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
+    let bookAuthor = editBtn.parentElement.previousElementSibling.previousElementSibling.textContent;
+    let bookIsbn = editBtn.parentElement.previousElementSibling.textContent;
+    // console.log(editBtn.parentElement.previousElementSibling.previousElementSibling);
+    // console.log(editBtn);
+    // console.log(bookTitle);
+
+    const modalLabel = updateModal.querySelector("#updateModalLabel");
+    const modalTitleInput = updateModal.querySelector("#title-update");
+    const modalAuthorInput = updateModal.querySelector("#author-update");
+    const modalIsbnInput = updateModal.querySelector("#isbn-update");
+
+    modalLabel.innerHTML = `Edit <strong>${bookTitle}</strong>`;
+    modalTitleInput.value = bookTitle;
+    modalAuthorInput.value = bookAuthor;
+    modalIsbnInput.value = bookIsbn;
+
+    const updateForm = document.querySelector("#book-update-form");
+    updateForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        bookTitle = modalTitleInput.value;
+        bookAuthor = modalAuthorInput.value;
+        bookIsbn = modalIsbnInput.value;
+
+        // console.log(bookTitle, bookAuthor, bookIsbn);
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${bookTitle}</td>
+            <td>${bookAuthor}</td>
+            <td>${bookIsbn}</td>
+            <td class="d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-warning update" 
+                    data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${bookTitle}">
+                    Edit
+                </button>          
+                <a class="btn btn-danger btn-sm delete" href="#">X</a>
+            </td>
+        `;
+
+        // console.log(editBtn.parentElement.parentElement);
+        let oldTr = editBtn.parentElement.parentElement;
+        console.log(oldTr);
+
+        oldTr.replaceWith(row);
+
+        editBtn = "";
+        // oldTr = null;
+    })
+})

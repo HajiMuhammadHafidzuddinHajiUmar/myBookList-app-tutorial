@@ -1,3 +1,4 @@
 # ignored because app-practice.js is identical to app.js. It is merely to test self.
-app-practice.js
+app.js
+app.practice.js
 # Other reason is because to practice on how to manually add a file to a .gitignore
