@@ -205,6 +205,7 @@ bookList.addEventListener("click", e => {
 
 // -------- Speacial request Fahmin - Event: Update ---------------------
 // refer to bootstraps' varying modal content
+
 const updateModal = document.querySelector("#updateModal");
 updateModal.addEventListener("show.bs.modal", e => {
     let editBtn = e.relatedTarget;
@@ -229,40 +230,17 @@ updateModal.addEventListener("show.bs.modal", e => {
     modalIsbnInput.value = bookIsbn;
 
     const updateForm = document.querySelector("#book-update-form");
-    updateForm.addEventListener("submit", event => {
+    updateForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        bookTitle = modalTitleInput.value;
-        bookAuthor = modalAuthorInput.value;
-        bookIsbn = modalIsbnInput.value;
+        UI.deleteBook(editBtn);
 
-        // console.log(bookTitle, bookAuthor, bookIsbn);
+        const book = new Book(modalTitleInput.value, modalAuthorInput.value, modalIsbnInput.value);
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${bookTitle}</td>
-            <td>${bookAuthor}</td>
-            <td>${bookIsbn}</td>
-            <td class="d-flex justify-content-center gap-3">
-                <button type="button" class="btn update" 
-                    data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${bookTitle}">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>          
-                <a class="btn btn-danger btn-sm delete" href="#">X</a>
-            </td>
-        `;
+        UI.addBookToList(book);
 
-        // console.log(editBtn.parentElement.parentElement);
-        let oldTr = editBtn.parentElement.parentElement;
-        console.log(oldTr);
+        console.log("submitted");
 
-        oldTr.replaceWith(row);
-
-        // editBtn = "";
-        // oldTr = null;
-
-        // updateForm.reset();
-
-        // UI.showAlert(`${bookTitle} has been updated`, "success");
+        updateForm.removeEventListener("submit", arguments.callee);
     })
 })
