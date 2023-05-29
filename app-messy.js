@@ -38,9 +38,9 @@ class UI {
             <td>${book.author}</td>
             <td>${book.isbn}</td>
             <td class="d-flex justify-content-center gap-3">
-                <button type="button" class="btn btn-warning update" 
+                <button type="button" class="btn update" 
                     data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${book.title}">
-                    Edit
+                    <i class="fa-regular fa-pen-to-square"></i>
                 </button>          
                 <a class="btn btn-danger btn-sm delete" href="#">X</a>
             </td>
@@ -193,11 +193,11 @@ bookList.addEventListener("click", e => {
 
         //     UI.deleteBook(e.target);
 
-        //     const updatedTitle = document.querySelector("#title-update").value;
-        //     const updatedAuthor = document.querySelector("#author-update").value;
-        //     const updatedIsbn = document.querySelector("#isbn-update").value;
+        //     let updatedTitle = document.querySelector("#title-update").value;
+        //     let updatedAuthor = document.querySelector("#author-update").value;
+        //     let updatedIsbn = document.querySelector("#isbn-update").value;
 
-        //     const updatedBook = new Book(updatedTitle, updatedAuthor, updatedIsbn);
+        //     let updatedBook = new Book(updatedTitle, updatedAuthor, updatedIsbn);
         //     UI.addBookToList(updatedBook);
         // })          // same with UI.updateBook except here uses UI.deleteBook|UI.addBookToList whereas top uses the replaceWith method
     }
@@ -208,6 +208,7 @@ bookList.addEventListener("click", e => {
 const updateModal = document.querySelector("#updateModal");
 updateModal.addEventListener("show.bs.modal", e => {
     let editBtn = e.relatedTarget;
+    console.log("editBtn clicked");
     // console.log(editBtn);
 
     let bookTitle = editBtn.getAttribute("data-bs-edit") && editBtn.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
@@ -243,9 +244,9 @@ updateModal.addEventListener("show.bs.modal", e => {
             <td>${bookAuthor}</td>
             <td>${bookIsbn}</td>
             <td class="d-flex justify-content-center gap-3">
-                <button type="button" class="btn btn-warning update" 
+                <button type="button" class="btn update" 
                     data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${bookTitle}">
-                    Edit
+                    <i class="fa-solid fa-pen-to-square"></i>
                 </button>          
                 <a class="btn btn-danger btn-sm delete" href="#">X</a>
             </td>
@@ -257,7 +258,9 @@ updateModal.addEventListener("show.bs.modal", e => {
 
         oldTr.replaceWith(row);
 
-        editBtn = "";
+        // editBtn = "";
         // oldTr = null;
+
+        // updateForm.reset();
     })
 })

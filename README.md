@@ -1,4 +1,4 @@
-[Incomplete] ## MyBookList Web app is a simple CRUD app, made following a tutorial. ##
+[Incomplete] ## MyBookList Web app is a simple CRUD app - made following a video tutorial. ##
 
 Purpose: To make a simple app using vanilla javascript by Object Oriented Programming
 
