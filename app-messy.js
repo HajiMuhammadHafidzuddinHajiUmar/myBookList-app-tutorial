@@ -262,5 +262,7 @@ updateModal.addEventListener("show.bs.modal", e => {
         // oldTr = null;
 
         // updateForm.reset();
+
+        // UI.showAlert(`${bookTitle} has been updated`, "success");
     })
 })
