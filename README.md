@@ -4,7 +4,7 @@ Purpose: To make a simple app using vanilla javascript by Object Oriented Progra
 
 Includes: HTML, Bootstrap, JS.
 
-Issues: Update feature submits more than once after the first update prompt.
+Issues: Update feature submits all previously done updates again.
 
 ------------------------------------------------
 - Step 1: Book, UI, UI.displayBooks, UI.addBookToList
