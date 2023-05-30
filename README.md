@@ -14,3 +14,9 @@ Includes: HTML, Bootstrap, JS.
 - Step 7: Apply Store to UI.displayBooks, add book event, remove a book event
 
 Personally added update feature.
+- Step 8: Add Modal Update Form
+- Step 9: Refactor addBookToList so that appendChild is seperate; add createTableRow()
+- Step 10: Add Event for submit modal form
+- Step 11: removeEventListener for submit AND none-submit of form ie. closed/hidden
+- Step 12: Validation for update form
+- Step 13: Store.updateBook
