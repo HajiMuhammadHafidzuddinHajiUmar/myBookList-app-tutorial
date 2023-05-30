@@ -29,62 +29,32 @@ class UI {
         books.forEach(book => UI.addBookToList(book));
     }
 
-    static addBookToList(book) {
-        const List = document.querySelector("#book-list");
-
+    static createTableRow(book) {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${book.title}</td>
             <td>${book.author}</td>
             <td>${book.isbn}</td>
             <td class="d-flex justify-content-center gap-3">
-                <button type="button" class="btn update" 
+                <button type="button" class="btn d-flex align-items-center update" 
                     data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${book.title}">
                     <i class="fa-regular fa-pen-to-square"></i>
                 </button>          
-                <a class="btn btn-danger btn-sm delete" href="#">X</a>
+                <a class="btn text-danger d-flex align-items-center delete" href="#">
+                    <i class="fa-solid fa-trash"></i>
+                </a>
             </td>
         `;
 
-        List.appendChild(row);
+        return row;
     }
 
-    // static updateBook(el) {
-    //     const updateBookForm = document.querySelector("#book-update-form");
-    //     updateBookForm.addEventListener("submit", e => {
-    //         e.preventDefault();
-    //         console.log("submit");
+    static addBookToList(book) {
+        const List = document.querySelector("#book-list");
+        const row = UI.createTableRow(book);
 
-    //         const updatedTitle = document.querySelector("#title-update").value;
-    //         const updatedAuthor = document.querySelector("#author-update").value;
-    //         const updatedIsbn = document.querySelector("#isbn-update").value;
-
-    //         if (updatedTitle === "" || updatedAuthor === "" || updatedIsbn === "") {
-    //             UI.showAlert("Modal: Please fill in all the fields", "danger");
-    //         } else {
-    //             const row = document.createElement("tr");
-    //             row.innerHTML = `
-    //                 <td>${updatedTitle}</td>
-    //                 <td>${updatedAuthor}</td>
-    //                 <td>${updatedIsbn}</td>
-    //                 <td class="d-flex justify-content-center gap-3">
-    //                     <button type="button" class="btn btn-warning update" data-bs-toggle="modal" data-bs-target="#updateModal">
-    //                         Edit
-    //                     </button>          
-    //                     <a class="btn btn-danger btn-sm delete" href="#">X</a>
-    //                 </td>
-    //             `;
-
-    //             // console.log(el.parentElement.parentElement);
-    //             let oldElement = el.parentElement.parentElement;
-    //             oldElement.replaceWith(row);
-
-    //             UI.showAlert("Modal: Book updated", "success");
-
-    //             // e.stopPropagation();
-    //         }
-    //     })
-    // }
+        List.appendChild(row);
+    }
 
     static deleteBook(el) {
         el.parentElement.parentElement.remove();
@@ -111,7 +81,7 @@ class UI {
 }
 
 // Store Class: Handles Storage - localStorage has key and value
-// note: cannot store objects in local storage, therefore need to be strings
+// note: cannot store objects in local storage, only strings
 // intoStorage: JSON.stringify | fromStorage: JSON.parse
 class Store {
     static getBooks() {
@@ -137,6 +107,18 @@ class Store {
         books.forEach((book, index) => {
             if (book.isbn === isbn) {
                 books.splice(index, 1);
+            }
+        })
+
+        localStorage.setItem("books", JSON.stringify(books));
+    }
+
+    static updateBook(isbn, newBook) {
+        const books = Store.getBooks();
+
+        books.forEach((book, index) => {
+            if (book.isbn === isbn) {
+                books.splice(index, 1, newBook);
             }
         })
 
@@ -183,23 +165,6 @@ bookList.addEventListener("click", e => {
         Store.removeBook(e.target.parentElement.previousElementSibling.textContent);    // to target the isbn
 
         UI.showAlert("Book removed", "success");
-        // } else if (e.target.classList.contains("update")) {         // Event: Update / edit a Book
-        // console.log(e.target);
-        // UI.updateBook(e.target);
-        // ----- or -----
-        // document.querySelector("#book-update-form").addEventListener("submit", ev => {
-        //     ev.preventDefault();
-        //     console.log("submit");
-
-        //     UI.deleteBook(e.target);
-
-        //     let updatedTitle = document.querySelector("#title-update").value;
-        //     let updatedAuthor = document.querySelector("#author-update").value;
-        //     let updatedIsbn = document.querySelector("#isbn-update").value;
-
-        //     let updatedBook = new Book(updatedTitle, updatedAuthor, updatedIsbn);
-        //     UI.addBookToList(updatedBook);
-        // })          // same with UI.updateBook except here uses UI.deleteBook|UI.addBookToList whereas top uses the replaceWith method
     }
 })
 
@@ -230,18 +195,280 @@ updateModal.addEventListener("show.bs.modal", e => {
     modalIsbnInput.value = bookIsbn;
 
     const updateForm = document.querySelector("#book-update-form");
-    updateForm.addEventListener("submit", function (event) {
+
+    const submitForm = (event) => {
         event.preventDefault();
 
-        UI.deleteBook(editBtn);
+        if (modalTitleInput.value === "" || modalAuthorInput.value === "" || modalIsbnInput.value === "") {
+            document.querySelector('.btn-update').removeAttribute('data-bs-dismiss');
+            UI.showAlert("Please fill all fields in the edit form", "danger")
+        } else {
+            const newBook = new Book(modalTitleInput.value, modalAuthorInput.value, modalIsbnInput.value);
 
-        const book = new Book(modalTitleInput.value, modalAuthorInput.value, modalIsbnInput.value);
+            // Replace UI
+            let oldElement = editBtn.parentElement.parentElement;
+            const row = UI.createTableRow(newBook);
+            oldElement.replaceWith(row);
 
-        UI.addBookToList(book);
+            // Replace localStorage
+            Store.updateBook(editBtn.parentElement.previousElementSibling.textContent, newBook);
 
-        console.log("submitted");
-        UI.showAlert(`${bookTitle} has been updated`, "success");
+            // Alert
+            console.log("submitted");
+            UI.showAlert(`Successfully updated ${bookTitle}`, "success");
 
-        updateForm.removeEventListener("submit", arguments.callee);
-    })
+            // Remove listerner: so it won't run again for future modal form submits
+            updateForm.removeEventListener("submit", submitForm);
+        }
+    }
+
+    updateForm.addEventListener("submit", submitForm);
+
+    // To also remove listener when modal is closed without submit
+    const modal = document.querySelector(".modal");     // must be different from updateForm?
+    modal.addEventListener("hidden.bs.modal", () => updateForm.removeEventListener("submit", submitForm));
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// -------------------- End of the line - junk codes ----------------------------------------------------------
+
+// // const bookList = document.querySelector("#book-list");
+// // bookList.addEventListener("click", e => {
+// //     // console.log(e.target);
+// //     if (e.target.classList.contains("delete")) {
+// //         UI.deleteBook(e.target);
+// //         Store.removeBook(e.target.parentElement.previousElementSibling.textContent);    // to target the isbn
+
+// //         UI.showAlert("Book removed", "success");
+//         // } else if (e.target.classList.contains("update")) {         // Event: Update / edit a Book
+//         // console.log(e.target);
+//         // UI.updateBook(e.target);
+//         // ----- or -----
+//         // document.querySelector("#book-update-form").addEventListener("submit", ev => {
+//         //     ev.preventDefault();
+//         //     console.log("submit");
+
+//         //     UI.deleteBook(e.target);
+
+//         //     let updatedTitle = document.querySelector("#title-update").value;
+//         //     let updatedAuthor = document.querySelector("#author-update").value;
+//         //     let updatedIsbn = document.querySelector("#isbn-update").value;
+
+//         //     let updatedBook = new Book(updatedTitle, updatedAuthor, updatedIsbn);
+//         //     UI.addBookToList(updatedBook);
+//         // })          // same with UI.updateBook except here uses UI.deleteBook|UI.addBookToList whereas top uses the replaceWith method
+// //     }
+// // })
+
+// // -------------------------------------------------------------------------------
+
+// static updateBook(el) {
+    //     const updateBookForm = document.querySelector("#book-update-form");
+    //     updateBookForm.addEventListener("submit", e => {
+    //         e.preventDefault();
+    //         console.log("submit");
+
+    //         const updatedTitle = document.querySelector("#title-update").value;
+    //         const updatedAuthor = document.querySelector("#author-update").value;
+    //         const updatedIsbn = document.querySelector("#isbn-update").value;
+
+    //         if (updatedTitle === "" || updatedAuthor === "" || updatedIsbn === "") {
+    //             UI.showAlert("Modal: Please fill in all the fields", "danger");
+    //         } else {
+    //             const row = document.createElement("tr");
+    //             row.innerHTML = `
+    //                 <td>${updatedTitle}</td>
+    //                 <td>${updatedAuthor}</td>
+    //                 <td>${updatedIsbn}</td>
+    //                 <td class="d-flex justify-content-center gap-3">
+    //                     <button type="button" class="btn btn-warning update" data-bs-toggle="modal" data-bs-target="#updateModal">
+    //                         Edit
+    //                     </button>          
+    //                     <a class="btn btn-danger btn-sm delete" href="#">X</a>
+    //                 </td>
+    //             `;
+
+    //             // console.log(el.parentElement.parentElement);
+    //             let oldElement = el.parentElement.parentElement;
+    //             oldElement.replaceWith(row);
+
+    //             UI.showAlert("Modal: Book updated", "success");
+
+    //             // e.stopPropagation();
+    //         }
+    //     })
+    // }
+
+// // -------------------------------------------------------------------------------
+
+
+// let editBtn;
+// const updateModal = document.querySelector("#updateModal");
+// updateModal.addEventListener("show.bs.modal", e => {
+//     editBtn = e.relatedTarget;
+//     console.log("editBtn clicked");
+//     // console.log(editBtn);
+
+//     let bookTitle = editBtn.getAttribute("data-bs-edit") && editBtn.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
+//     let bookAuthor = editBtn.parentElement.previousElementSibling.previousElementSibling.textContent;
+//     let bookIsbn = editBtn.parentElement.previousElementSibling.textContent;
+//     // console.log(editBtn.parentElement.previousElementSibling.previousElementSibling);
+//     // console.log(editBtn);
+//     // console.log(bookTitle);
+
+//     const modalLabel = updateModal.querySelector("#updateModalLabel");
+//     const modalTitleInput = updateModal.querySelector("#title-update");
+//     const modalAuthorInput = updateModal.querySelector("#author-update");
+//     const modalIsbnInput = updateModal.querySelector("#isbn-update");
+
+//     modalLabel.innerHTML = `Edit <strong>${bookTitle}</strong>`;
+//     modalTitleInput.value = bookTitle;
+//     modalAuthorInput.value = bookAuthor;
+//     modalIsbnInput.value = bookIsbn;
+
+//     const updateForm = document.querySelector("#book-update-form");
+//     updateForm.addEventListener("submit", event => {
+//         event.preventDefault();
+
+//         bookTitle = modalTitleInput.value;
+//         bookAuthor = modalAuthorInput.value;
+//         bookIsbn = modalIsbnInput.value;
+
+//         // console.log(bookTitle, bookAuthor, bookIsbn);
+
+//         const row = document.createElement("tr");
+//         row.innerHTML = `
+//             <td>${bookTitle}</td>
+//             <td>${bookAuthor}</td>
+//             <td>${bookIsbn}</td>
+//             <td class="d-flex justify-content-center gap-3">
+//                 <button type="button" class="btn update" 
+//                     data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${bookTitle}">
+//                     <i class="fa-solid fa-pen-to-square"></i>
+//                 </button>          
+//                 <a class="btn btn-danger btn-sm delete" href="#">X</a>
+//             </td>
+//         `;
+
+//         // console.log(editBtn.parentElement.parentElement);
+//         let oldTr = editBtn.parentElement.parentElement;
+//         console.log(oldTr);
+
+//         oldTr.replaceWith(row);
+
+//         // editBtn = "";
+//         // oldTr = null;
+
+//         // updateForm.reset();
+
+//         // UI.showAlert(`${bookTitle} has been updated`, "success");
+//     })
+// })
+
+// // -------------------------------------------------------------------------------
+
+// // const updateModal = document.querySelector("#updateModal");
+// // updateModal.addEventListener("show.bs.modal", e => {
+// //     let editBtn = e.relatedTarget;
+// //     // console.log(editBtn);
+
+// //     let bookTitle = editBtn.getAttribute("data-bs-edit") && editBtn.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
+// //     let bookAuthor = editBtn.parentElement.previousElementSibling.previousElementSibling.textContent;
+// //     let bookIsbn = editBtn.parentElement.previousElementSibling.textContent;
+
+// //     const modalLabel = updateModal.querySelector("#updateModalLabel");
+// //     const modalTitleInput = updateModal.querySelector("#title-update");
+// //     const modalAuthorInput = updateModal.querySelector("#author-update");
+// //     const modalIsbnInput = updateModal.querySelector("#isbn-update");
+
+// //     modalLabel.innerHTML = `Edit <strong>${bookTitle}</strong>`;
+// //     modalTitleInput.value = bookTitle;
+// //     modalAuthorInput.value = bookAuthor;
+// //     modalIsbnInput.value = bookIsbn;
+// // })
+
+// // const updateForm = document.querySelector("#book-update-form");
+// // updateForm.addEventListener("submit", event => {
+// //     event.preventDefault();
+
+// //     bookTitle = modalTitleInput.value;
+// //     bookAuthor = modalAuthorInput.value;
+// //     bookIsbn = modalIsbnInput.value;
+
+// //     const row = document.createElement("tr");
+// //     row.innerHTML = `
+// //             <td>${bookTitle}</td>
+// //             <td>${bookAuthor}</td>
+// //             <td>${bookIsbn}</td>
+// //             <td class="d-flex justify-content-center gap-3">
+// //                 <button type="button" class="btn btn-warning update" 
+// //                     data-bs-toggle="modal" data-bs-target="#updateModal" data-bs-edit="${bookTitle}">
+// //                     Edit
+// //                 </button>          
+// //                 <a class="btn btn-danger btn-sm delete" href="#">X</a>
+// //             </td>
+// //         `;
+
+// //     let oldTr = editBtn.parentElement.parentElement;
+// //     console.log(oldTr);
+
+// //     oldTr.replaceWith(row);
+// // })
+
+// // -------------------------------------------------------------------------------
+
+// // const updateForm = document.querySelector("#book-update-form");
+//     // updateForm.addEventListener("submit", function (event) {            // add event listener
+//     //     event.preventDefault();
+
+//     //     UI.deleteBook(editBtn);
+
+//     //     const book = new Book(modalTitleInput.value, modalAuthorInput.value, modalIsbnInput.value);
+
+//     //     UI.addBookToList(book);
+
+//     //     console.log("submitted");
+//     //     UI.showAlert(`${bookTitle} has been updated`, "success");
+
+//     //     updateForm.removeEventListener("submit", arguments.callee);     // remove event listener
+//     // })
+
+// // -------------------------------------------------------------------------------
+
+//     const submitForm = (event) => {
+//         event.preventDefault();
+
+//         UI.deleteBook(editBtn);
+
+//         const book = new Book(modalTitleInput.value, modalAuthorInput.value, modalIsbnInput.value);
+
+//         UI.addBookToList(book);
+
+//         console.log("submitted");
+//         UI.showAlert(`Successfully updated ${bookTitle}`, "success");
+
+//         updateForm.removeEventListener("submit", submitForm);
+//     }
+
+//     const updateForm = document.querySelector("#book-update-form");
+//     updateForm.addEventListener("submit", submitForm);

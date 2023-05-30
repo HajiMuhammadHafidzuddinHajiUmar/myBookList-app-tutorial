@@ -1,10 +1,8 @@
-[Incomplete] ## MyBookList Web app is a simple CRUD app - made following a video tutorial. ##
+[Complete] ## MyBookList Web app is a simple CRUD app - made following a video tutorial. ##
 
 Purpose: To make a simple app using vanilla javascript by Object Oriented Programming
 
 Includes: HTML, Bootstrap, JS.
-
-Issues: Update feature submits all previously done updates again.
 
 ------------------------------------------------
 - Step 1: Book, UI, UI.displayBooks, UI.addBookToList
