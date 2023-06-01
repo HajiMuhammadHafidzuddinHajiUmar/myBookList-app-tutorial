@@ -20,3 +20,5 @@ Personally added update feature.
 - Step 11: removeEventListener for submit AND none-submit of form ie. closed/hidden
 - Step 12: Validation for update form
 - Step 13: Store.updateBook
+
+- Step 14: Added light/dark switch

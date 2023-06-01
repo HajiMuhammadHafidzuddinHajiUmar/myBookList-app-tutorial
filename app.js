@@ -215,5 +215,6 @@ toggleLightDark.addEventListener("click", () => {
             break;
         default:
             console.log("Something went wrong with the light-dark mode switch");
+            break;
     }
 })
