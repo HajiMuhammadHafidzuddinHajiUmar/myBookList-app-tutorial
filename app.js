@@ -213,5 +213,7 @@ toggleLightDark.addEventListener("click", () => {
         case "https://bootswatch.com/5/vapor/bootstrap.min.css":
             boostwatchCDN.href = "https://bootswatch.com/5/yeti/bootstrap.min.css";
             break;
+        default:
+            console.log("Something went wrong with the light-dark mode switch");
     }
 })
