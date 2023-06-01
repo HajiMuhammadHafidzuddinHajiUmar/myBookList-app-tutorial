@@ -201,3 +201,17 @@ updateModal.addEventListener("show.bs.modal", e => {
     const modal = document.querySelector(".modal");
     modal.addEventListener("hidden.bs.modal", () => updateForm.removeEventListener("submit", submitForm));
 })
+
+// Extra: light-dark mode
+const toggleLightDark = document.querySelector("#light-dark");
+const boostwatchCDN = document.querySelector("#bootswatchCDN");
+toggleLightDark.addEventListener("click", () => {
+    switch (boostwatchCDN.href) {
+        case "https://bootswatch.com/5/yeti/bootstrap.min.css":
+            boostwatchCDN.href = "https://bootswatch.com/5/vapor/bootstrap.min.css";
+            break;
+        case "https://bootswatch.com/5/vapor/bootstrap.min.css":
+            boostwatchCDN.href = "https://bootswatch.com/5/yeti/bootstrap.min.css";
+            break;
+    }
+})
