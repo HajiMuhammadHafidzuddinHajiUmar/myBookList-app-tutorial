@@ -22,3 +22,8 @@ Personally added update feature.
 - Step 13: Store.updateBook
 
 - Step 14: Added light/dark switch
+------------------------------------------------
+Potential future imporvements:
+- Update form do no close on fail validations.
+- showAlert onto update form for failed update form submits, instead of onto main page.
+- Highlights the missing/problem fields on failed validations.
